@@ -18,6 +18,12 @@ Don't follow these instructions unless you're prepared:
 * You wanna see this awesomeness in action
 * You'd like to contribute to how this software shapes up, find bugs and help me make it easier for future users to install and use
 
+Note: PiDi Spotify and Mopidy cannot co-exist, if you're using Mopidy make sure you shut it down before trying this:
+
+```
+sudo systemctl stop mopidy
+```
+
 ## Installing
 
 
@@ -37,6 +43,12 @@ export SPOTIPY_CLIENT_SECRET="YOUR CLIENT SECRET"
 ```
 
 ### PiDi Spotify
+
+Enable SPI on your Raspberry Pi:
+
+```
+sudo raspi-config nonint do_spi 0
+```
 
 Install the dependencies, PiDi Spotify uses `pidi_display_st7789` and the Spotify API:
 
