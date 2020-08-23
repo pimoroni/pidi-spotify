@@ -26,7 +26,6 @@ class FIFO:
     def read(self):
         if self._f is None:
             self._f = os.open(self.fifo_name, os.O_RDONLY | os.O_NONBLOCK)
-            print("open", self._f)
 
         # Check for inbound command
         r, w, e = select.select([self._f], [], [], 0)

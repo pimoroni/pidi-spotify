@@ -12,6 +12,7 @@ from .fifo import FIFO
 from .st7789 import DisplayST7789
 
 FIFO_NAME = "/tmp/spotify_album_display"
+CACHE_DIR = "/home/pi/pidi-spotify/cache/"
 
 running = False
 
@@ -96,11 +97,11 @@ def command_track(track_id, position_ms):
         if image["height"] == 300:
             image_url = image["url"]
 
-    image_cache_path = Path(f"/home/pi/spotipy/cache/{album_id}.png")
+    image_cache_path = Path(f"{CACHE_DIR}/{album_id}.png")
     if not image_cache_path.is_file():
         print("Missing cached image, loading now..")
         image = requests.get(image_url)
-        with open(image_cache_path, "wb") as f:
+        with open(image_cache_path, "wb+") as f:
             f.write(image.content)
 
     display.update_album_art(image_cache_path)
@@ -137,6 +138,13 @@ if __name__ == "__main__":
 
     _t_display_update = Thread(target=display_update)
     _t_display_update.start()
+
+    print(f"""PiDi Spotify Running
+
+Listening on FIFO: {args.fifo_name}
+
+Press Ctrl+C to exit
+""")
 
     with fifo as fifo:
         while state.running:
