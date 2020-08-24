@@ -3,4 +3,4 @@
 export SPOTIPY_CLIENT_ID="YOUR CLIENT ID"
 export SPOTIPY_CLIENT_SECRET="YOUR CLIENT SECRET"
 
-pidi_spotify
+/usr/local/bin/pidi_spotify

@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=pidi_spotify
+ExecStart=/usr/local/bin/pidi_spotify
 Restart=on-failure
 
 [Install]
