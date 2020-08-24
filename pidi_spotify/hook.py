@@ -48,7 +48,7 @@ class EventHandlers:
         self.write(f"track:{track_id}:{position_ms}")
 
     def event_volume_set(self, env):
-        volume = env.get("VOLUME", 0)
+        volume = int(env.get("VOLUME", 0))
         volume = volume * 100 // 65535
         self.write(f"volume:{volume}")
 
