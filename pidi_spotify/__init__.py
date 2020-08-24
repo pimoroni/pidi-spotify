@@ -1,10 +1,11 @@
 import sys
-import argparse
+import configargparse
 import signal
 import time
 from pathlib import Path
 from threading import Thread
 
+import logging
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -106,9 +107,9 @@ def command_track(track_id, position_ms):
         if image["height"] == 300:
             image_url = image["url"]
 
-    image_cache_path = Path(f"{CACHE_DIR}/{album_id}.png")
+    image_cache_path = image_cache_dir / f"{album_id}.png"
     if not image_cache_path.is_file():
-        print("Missing cached image, loading now..")
+        logger.info("Fetching image for {state.album_name} ({album_id})")
         image = requests.get(image_url)
         with open(image_cache_path, "wb+") as f:
             f.write(image.content)
@@ -128,10 +129,12 @@ def signal_handler(sig, frame):
 
 
 def main():
-    global spotify, state, display  # TODO This is horrid, encapsulate in a class?
+    global spotify, state, display, logger, image_cache_dir  # TODO This is horrid, encapsulate in a class?
 
-    parser = argparse.ArgumentParser()
+    parser = configargparse.ArgParser(default_config_files=[CONF_FILE])
     parser.add_argument("--fifo-name", default=FIFO_NAME, type=str)
+    parser.add_argument("--cache-dir", default=CACHE_DIR, type=str)
+    parser.add_argument("--log-file", default=LOG_FILE, type=str)
     parser.add_argument("--hook", default=False, action="store_true")
     DisplayST7789.add_args(parser)
 
@@ -141,11 +144,17 @@ def main():
     if args.hook:
         sys.exit(hook.main(args))
 
+    logger = logging.getLogger("pidi_spotify")
+    log_fh = logging.FileHandler(args.log_file)
+    log_fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logger.addHandler(log_fh)
+    logger.setLevel(logging.WARNING)
+
     fifo = FIFO(args.fifo_name)
     display = DisplayST7789(args)
 
-    image_cache_path = Path(CACHE_DIR)
-    image_cache_path.mkdir(exist_ok=True)
+    image_cache_dir = Path(args.cache_dir)
+    image_cache_dir.mkdir(exist_ok=True)
 
     auth_manager = SpotifyClientCredentials()
     spotify = spotipy.Spotify(auth_manager=auth_manager)
@@ -160,6 +169,8 @@ def main():
     print(f"""PiDi Spotify Running
 
 Listening on FIFO: {args.fifo_name}
+Image cache dir: {args.cache_dir}
+Log file: {args.log_file}
 
 Press Ctrl+C to exit
 """)
@@ -177,9 +188,9 @@ Press Ctrl+C to exit
 
             try:
                 globals()[f"command_{command_fn}"](*command_args)
-                print(f"Command {command_fn} args: {','.join(command_args)}")
+                logger.info(f"Command {command_fn} args: {','.join(command_args)}")
             except KeyError:
-                print(f"Unrecognised command {command_fn}")
+                logger.error(f"Unrecognised command {command_fn}")
 
     state.running = False
     _t_display_update.join()
