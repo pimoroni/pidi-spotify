@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 
 FIFO_FILE = "/tmp/pidi-spotify.fifo"
 LOG_FILE = "/tmp/pidi-spotify-hook.log"
@@ -12,8 +13,11 @@ class EventHandlers:
         self.fifo_file = fifo_file
 
     def write(self, command):
-        with open(self.fifo_file, "w") as f:
-            f.write(f"{command}\n")
+        if Path(self.fifo_file).is_fifo():
+            with open(self.fifo_file, "w") as f:
+                f.write(f"{command}\n")
+        else:
+            print(f"Unable to write. {self.fifo_file} does not exist.")
 
     def dispatch(self, event, env):
         handler = getattr(self, f"event_{event}", None)
