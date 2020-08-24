@@ -1,0 +1,11 @@
+[Unit]
+Description=PiDi Spotify Service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=pidi_spotify
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
