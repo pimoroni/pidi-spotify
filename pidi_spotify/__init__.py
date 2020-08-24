@@ -145,7 +145,7 @@ def main():
     display = DisplayST7789(args)
 
     image_cache_path = Path(CACHE_DIR)
-    image_cache_path.mkdir()
+    image_cache_path.mkdir(exist_ok=True)
 
     auth_manager = SpotifyClientCredentials()
     spotify = spotipy.Spotify(auth_manager=auth_manager)
