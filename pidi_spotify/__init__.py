@@ -1,21 +1,20 @@
-import sys
-import configargparse
+import logging
 import signal
+import sys
 import time
 from pathlib import Path
 from threading import Thread
 
-import logging
+import configargparse
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
+from . import hook
 from .fifo import FIFO
 from .st7789 import DisplayST7789
-from . import hook
 
-
-__version__ = '0.0.1'
+__version__ = "0.0.1"
 
 
 FIFO_NAME = "/tmp/pidi-spotify.fifo"
@@ -90,6 +89,14 @@ def command_seek(position_ms):
     state.started = time.time()
 
 
+def command_pause(track_id):
+    state.state = "pause"
+
+
+def command_play(track_id):
+    state.state = "play"
+
+
 def command_track(track_id, position_ms):
     track = spotify.track(track_id)
 
@@ -99,6 +106,7 @@ def command_track(track_id, position_ms):
     state.duration_ms = int(track["duration_ms"])
     command_seek(position_ms)
 
+    state.state = "play"
     state.album_name = track["album"]["name"]
     state.artist_name = track["album"]["artists"][0]["name"]
     state.track_name = track["name"]
@@ -121,7 +129,7 @@ def display_update():
     while state.running:
         display.update_overlay(*state)
         display.redraw()
-        time.sleep(1.0 / 15)
+        time.sleep(1.0 / args.fps)
 
 
 def signal_handler(sig, frame):
@@ -129,12 +137,13 @@ def signal_handler(sig, frame):
 
 
 def main():
-    global spotify, state, display, logger, image_cache_dir  # TODO This is horrid, encapsulate in a class?
+    global spotify, state, display, logger, image_cache_dir, args  # TODO This is horrid, encapsulate in a class?
 
     parser = configargparse.ArgParser(default_config_files=[CONF_FILE])
     parser.add_argument("--fifo-name", default=FIFO_NAME, type=str)
     parser.add_argument("--cache-dir", default=CACHE_DIR, type=str)
     parser.add_argument("--log-file", default=LOG_FILE, type=str)
+    parser.add_argument("--fps", default=15, type=int)
     parser.add_argument("--hook", default=False, action="store_true")
     DisplayST7789.add_args(parser)
 
@@ -166,14 +175,16 @@ def main():
     _t_display_update = Thread(target=display_update)
     _t_display_update.start()
 
-    print(f"""PiDi Spotify Running
+    print(
+        f"""PiDi Spotify Running
 
 Listening on FIFO: {args.fifo_name}
 Image cache dir: {args.cache_dir}
 Log file: {args.log_file}
 
 Press Ctrl+C to exit
-""")
+"""
+    )
 
     with fifo as fifo:
         while state.running:

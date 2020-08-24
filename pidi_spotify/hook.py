@@ -3,7 +3,6 @@
 import os
 import sys
 
-
 FIFO_FILE = "/tmp/pidi-spotify.fifo"
 LOG_FILE = "/tmp/pidi-spotify-hook.log"
 
@@ -11,7 +10,7 @@ LOG_FILE = "/tmp/pidi-spotify-hook.log"
 class EventHandlers:
     def __init__(self, fifo_file):
         self.fifo_file = fifo_file
-        
+
     def write(self, command):
         with open(self.fifo_file, "w") as f:
             f.write(f"{command}\n")
@@ -57,9 +56,9 @@ def main(args):
     log_file = getattr(args, "hook_log_file", LOG_FILE)
     fifo_file = getattr(args, "fifo_file", FIFO_FILE)
 
-    si = open("/dev/null", 'r')
-    so = open(log_file, 'a+')
-    se = open(log_file, 'a+')
+    si = open("/dev/null", "r")
+    so = open(log_file, "a+")
+    se = open(log_file, "a+")
 
     os.dup2(si.fileno(), sys.stdin.fileno())
     os.dup2(so.fileno(), sys.stdout.fileno())
