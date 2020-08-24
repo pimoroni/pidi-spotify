@@ -85,5 +85,24 @@ export SPOTIPY_CLIENT_SECRET="YOUR CLIENT SECRET"
 pidi_spotify
 ```
 
+## Running on boot
+
+### Crontab (eh, it works)
+
 You can copy `start.sh` to `/home/pi`, edit it and add it to crontab using `crontab -e` and adding the line `@reboot /home/pi/start.sh`. Don't check your Client ID and Secret into GitHub!
 
+### Systemd (better)
+
+Edit `/etc/default/pidi-spotify` and set `client-id` and `client-secret` like so:
+
+```
+client-id=your client id
+client-secret=your client secret
+```
+
+Then copy the systemd service into place and enable it:
+
+```
+sudo cp pidi-spotify.service /etc/systemd/system/
+sudo systemctl enable pidi-spotify
+```

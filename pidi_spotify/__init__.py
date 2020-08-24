@@ -145,6 +145,8 @@ def main():
     parser.add_argument("--log-file", default=LOG_FILE, type=str)
     parser.add_argument("--fps", default=15, type=int)
     parser.add_argument("--hook", default=False, action="store_true")
+    parser.add_argument("--client-id", default=None, type=str)
+    parser.add_argument("--client-secret", default=None, type=str)
     DisplayST7789.add_args(parser)
 
     args = parser.parse_args()
@@ -165,7 +167,10 @@ def main():
     image_cache_dir = Path(args.cache_dir)
     image_cache_dir.mkdir(exist_ok=True)
 
-    auth_manager = SpotifyClientCredentials()
+    if args.client_id is not None and args.client_secret is not None:
+        auth_manager = SpotifyClientCredentials(client_id=args.client_id, client_secret=args.client_secret)
+    else:
+        auth_manager = SpotifyClientCredentials()
     spotify = spotipy.Spotify(auth_manager=auth_manager)
 
     state = State()
