@@ -50,24 +50,13 @@ Enable SPI on your Raspberry Pi:
 sudo raspi-config nonint do_spi 0
 ```
 
-Install the dependencies, PiDi Spotify uses `pidi_display_st7789` and the Spotify API:
-
-```
-sudo pip3 install spotipy pidi_display_st7789
-```
-
-Grab PiDi Spotify using git, best stick it in `/home/pi` so we're working from a common path for now:
+Install PiDi Spotify using git, best stick it in `/home/pi` so we're working from a common path for now:
 
 ```
 cd /home/pi
 git clone https://github.com/pimoroni/pidi-spotify
 cd pidi-spotify
-```
-
-Make super sure `hook.sh` is executable. This is the script that Raspotify uses to communicate with PiDi Spotify:
-
-```
-sudo chmod +x hook.sh
+sudo python3 setup.py install
 ```
 
 Now edit Raspotify's config file:
@@ -76,10 +65,10 @@ Now edit Raspotify's config file:
 sudo nano /etc/default/raspotify
 ```
 
-You need to add `--onevent /home/pi/pidi-spotify/hook.sh` to the `OPTIONS=` section. My options look like this, but yours might vary:
+You need to add `--onevent 'pidi_spotify --hook'` to the `OPTIONS=` section. My options look like this, but yours might vary:
 
 ```
-OPTIONS="--device hw:1,0 --onevent /home/pi/pidi-spotify/hook.sh"
+OPTIONS="--device hw:1,0 --onevent 'pidi_spotify --hook'"
 ```
 
 Now, re-start Raspotify so it knows to use the hook:
@@ -93,8 +82,27 @@ Finally run PiDi Spotify so Raspotify can talk to it:
 ```
 export SPOTIPY_CLIENT_ID="YOUR CLIENT ID"
 export SPOTIPY_CLIENT_SECRET="YOUR CLIENT SECRET"
-python3 -m pidi_spotify
+pidi_spotify
 ```
+
+## Running on boot
+
+### Crontab (eh, it works)
 
 You can copy `start.sh` to `/home/pi`, edit it and add it to crontab using `crontab -e` and adding the line `@reboot /home/pi/start.sh`. Don't check your Client ID and Secret into GitHub!
 
+### Systemd (better)
+
+Edit `/etc/default/pidi-spotify` and set `client-id` and `client-secret` like so:
+
+```
+client-id=your client id
+client-secret=your client secret
+```
+
+Then copy the systemd service into place and enable it:
+
+```
+sudo cp pidi-spotify.service /etc/systemd/system/
+sudo systemctl enable pidi-spotify
+```
