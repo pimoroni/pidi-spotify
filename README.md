@@ -56,8 +56,8 @@ Install PiDi Spotify using git, best stick it in `/home/pi` so we're working fro
 cd /home/pi
 git clone https://github.com/pimoroni/pidi-spotify
 cd pidi-spotify
-sudo apt-get install python3-setuptools python3-dev python3-pip libjpeg-dev
-python3 -m pip install numpy
+sudo apt-get install python3-setuptools python3-dev python3-pip libjpeg-dev libatlas-base-dev
+pip3 install numpy spidev RPi.GPIO
 sudo python3 setup.py install
 ```
 
