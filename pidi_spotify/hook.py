@@ -26,12 +26,12 @@ class EventHandlers:
             return True
         return False
 
-    def event_start(self, env):
+    def event_started(self, env):
         track_id = env["TRACK_ID"]
         position_ms = env.get("POSITION_MS", 0)
         self.write(f"track:{track_id}:{position_ms}")
 
-    def event_change(self, env):
+    def event_changed(self, env):
         track_id = env["TRACK_ID"]
         position_ms = env.get("POSITION_MS", 0)
         self.write(f"track:{track_id}:{position_ms}")
@@ -45,7 +45,7 @@ class EventHandlers:
         track_id = env["TRACK_ID"]
         self.write(f"pause:{track_id}")
 
-    def event_stop(self, env):
+    def event_stopped(self, env):
         track_id = env["TRACK_ID"]
         position_ms = env.get("POSITION_MS", 0)
         self.write(f"track:{track_id}:{position_ms}")
@@ -54,6 +54,11 @@ class EventHandlers:
         volume = int(env.get("VOLUME", 0))
         volume = volume * 100 // 65535
         self.write(f"volume:{volume}")
+
+    # Compatibility shim for versions <=v0.1.6
+    event_start = event_started
+    event_change = event_changed
+    event_stop = event_stopped
 
 
 def main(args):
